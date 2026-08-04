@@ -1,0 +1,26 @@
+# Build output
+build/
+sdkconfig
+sdkconfig.old
+read-partition-table.bin
+.cache/
+
+# Managed components — downloaded automatically, not committed
+managed_components/
+dependencies.lock
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# VSCode
+.vscode/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDF component manager
+idf_component_manager.yml
+.idf_component_manager/
