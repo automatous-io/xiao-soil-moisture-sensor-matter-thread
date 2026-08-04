@@ -1,0 +1,54 @@
+menu "Soil Sensor Configuration"
+
+    config SOIL_SAMPLE_INTERVAL_SECONDS
+        int "Soil sample interval (seconds)"
+        default 900
+        range 60 86400
+        help
+            How often the firmware wakes to sample the soil probe and battery.
+            Sampling is local (no radio); the reading is only reported over
+            Thread when it changes by at least the report delta.
+
+    config SOIL_REPORT_DELTA_PERCENT
+        int "Report delta (percent)"
+        default 1
+        range 1 20
+        help
+            Minimum change in soil moisture percent before the Matter
+            attribute is updated (and therefore reported to subscribers).
+
+    config SOIL_EXCITATION_SETTLE_MS
+        int "Probe excitation settle time (ms)"
+        default 300
+        help
+            Delay between enabling the 200 kHz excitation PWM and the first
+            ADC read, letting the probe's RC filter settle.
+
+    config SOIL_CAL_DEFAULT_DRY_MV
+        int "Default dry calibration (mV)"
+        default 2750
+        help
+            Probe output in millivolts in dry air. Overridden by button
+            calibration (triple press), which persists to NVS.
+
+    config SOIL_CAL_DEFAULT_WET_MV
+        int "Default wet calibration (mV)"
+        default 1200
+        help
+            Probe output in millivolts in water. Overridden by button
+            calibration (triple press), which persists to NVS.
+
+    config SOIL_BATTERY_EMPTY_MV
+        int "Battery empty voltage at ADC pin (mV)"
+        default 1000
+        help
+            ADC pin voltage that maps to 0% battery. Matches the original
+            ESPHome firmware's mapping for this kit.
+
+    config SOIL_BATTERY_FULL_MV
+        int "Battery full voltage at ADC pin (mV)"
+        default 1500
+        help
+            ADC pin voltage that maps to 100% battery.
+
+endmenu

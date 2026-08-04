@@ -1,0 +1,77 @@
+CONFIG_IDF_TARGET="esp32c6"
+
+# Project-specific CHIP configuration (vendor/product identity)
+CONFIG_CHIP_PROJECT_CONFIG="main/CHIPProjectConfig.h"
+
+# Enable OpenThread
+CONFIG_OPENTHREAD_ENABLED=y
+CONFIG_OPENTHREAD_SRP_CLIENT=y
+CONFIG_OPENTHREAD_LOG_LEVEL_DYNAMIC=n
+CONFIG_OPENTHREAD_LOG_LEVEL_NOTE=y
+CONFIG_OPENTHREAD_CLI=n
+
+# Thread device type — Minimal Thread Device (MTD), sleepy end device.
+# This is a battery-powered sensor: it runs as a LIT ICD, not a router.
+CONFIG_OPENTHREAD_MTD=y
+
+# LwIP config for OpenThread
+CONFIG_LWIP_IPV6_NUM_ADDRESSES=8
+CONFIG_LWIP_MULTICAST_PING=y
+
+# Thread is IPv6-only; drop IPv4 to save power and flash
+CONFIG_LWIP_ND6=n
+CONFIG_LWIP_IPV4=n
+CONFIG_DISABLE_IPV4=y
+
+# MDNS platform
+CONFIG_USE_MINIMAL_MDNS=n
+CONFIG_ENABLE_EXTENDED_DISCOVERY=y
+
+# Disable WiFi STA (Thread-only device)
+CONFIG_ENABLE_WIFI_STATION=n
+
+# BLE sleep (BLE used for commissioning only)
+CONFIG_BT_LE_SLEEP_ENABLE=y
+CONFIG_BT_LE_LP_CLK_SRC_MAIN_XTAL=y
+
+# Disable external 32K crystal
+CONFIG_RTC_CLK_SRC_EXT_CRYS=n
+
+# Enable power management + light sleep
+CONFIG_PM_ENABLE=y
+CONFIG_PM_DFS_INIT_AUTO=y
+CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP=y
+CONFIG_ESP_SLEEP_POWER_DOWN_FLASH=y
+CONFIG_ESP_PHY_MAC_BB_PD=y
+
+# FreeRTOS config for light sleep
+CONFIG_FREERTOS_HZ=1000
+CONFIG_FREERTOS_USE_TICKLESS_IDLE=y
+
+# Enable IEEE 802.15.4 sleep
+CONFIG_IEEE802154_SLEEP_ENABLE=y
+
+# mbedTLS
+CONFIG_MBEDTLS_SSL_PROTO_DTLS=y
+
+# ICD server — LIT (Long Idle Time) configuration.
+# Idle mode 900 s aligns with the soil sample cadence so check-ins and
+# subscription reports carry fresh data. Active threshold 5000 ms is the
+# LIT spec minimum. LIT operates as SIT until an ICD client registers.
+CONFIG_ENABLE_ICD_SERVER=y
+CONFIG_ENABLE_ICD_LIT=y
+CONFIG_ICD_FAST_POLL_INTERVAL_MS=500
+CONFIG_ICD_SLOW_POLL_INTERVAL_MS=20000
+CONFIG_ICD_IDLE_MODE_INTERVAL_SEC=900
+CONFIG_ICD_ACTIVE_MODE_INTERVAL_MS=1000
+CONFIG_ICD_ACTIVE_MODE_THRESHOLD_MS=5000
+CONFIG_ICD_CLIENTS_SUPPORTED_PER_FABRIC=2
+CONFIG_ICD_MAX_NOTIFICATION_SUBSCRIBERS=2
+
+# Enable power save for the button (GPIO wake from light sleep)
+CONFIG_GPIO_BUTTON_SUPPORT_POWER_SAVE=y
+
+# Keep the USB-Serial/JTAG console alive while USB is plugged in: skip
+# automatic light sleep on an active USB connection. On battery (no USB)
+# the device sleeps normally.
+CONFIG_USJ_NO_AUTO_LS_ON_CONNECTION=y
