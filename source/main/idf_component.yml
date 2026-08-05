@@ -1,3 +1,5 @@
 dependencies:
   espressif/button:
     version: "^4"
+  espressif/esp_matter:
+    version: "^1.5.1"

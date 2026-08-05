@@ -5,9 +5,12 @@ sdkconfig.old
 read-partition-table.bin
 .cache/
 
-# Managed components — downloaded automatically, not committed
+# Managed components — downloaded automatically, not committed.
+# dependencies.lock IS committed so builds resolve identical versions.
 managed_components/
-dependencies.lock
+
+# Custom-board exploration lives outside this firmware repo (64 MB file)
+Kicad.kicad_pcb
 
 # macOS
 .DS_Store
@@ -15,6 +18,7 @@ dependencies.lock
 
 # VSCode
 .vscode/
+.history/
 
 # Python cache
 __pycache__/

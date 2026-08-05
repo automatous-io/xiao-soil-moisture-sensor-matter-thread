@@ -18,8 +18,23 @@
 
 #pragma once
 
+#include <stdlib.h>
+
+#include <esp_compiler.h>
 #include <esp_err.h>
 #include <esp_matter.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
+// From esp-matter examples/common/utils/common_macros.h (Apache 2.0), inlined
+// so the firmware builds against the esp_matter managed component alone.
+#define ABORT_APP_ON_FAILURE(x, ...) do {           \
+        if (!(unlikely(x))) {                       \
+            __VA_ARGS__;                            \
+            vTaskDelay(5000 / portTICK_PERIOD_MS);  \
+            abort();                                \
+        }                                           \
+    } while (0)
 
 // XIAO ESP32-C6 soil moisture kit pin map.
 #define PIN_BATTERY_ADC   GPIO_NUM_0   // D0 — battery voltage (divided)
