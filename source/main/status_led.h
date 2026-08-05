@@ -19,6 +19,7 @@
 #pragma once
 
 #include <esp_err.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef enum {
@@ -32,8 +33,7 @@ esp_err_t status_led_init(void);
 
 // Blink `count` on/off cycles of `color`, each phase lasting `period_ms`.
 // Asynchronous (esp_timer driven); a new pattern replaces the current one.
-// Holds a no-light-sleep PM lock for the duration of the pattern so blinks
-// stay clean while power management is active.
+// Holds a no-light-sleep PM lock for the pattern duration.
 void status_led_blink(led_color_t color, int count, int period_ms);
 
 // Blink continuously until status_led_stop() is called.
@@ -46,3 +46,7 @@ void status_led_stop(void);
 // red = dry, yellow = almost dry, green = normal. Same thresholds as the
 // original ESPHome firmware.
 void status_led_moisture_blink(uint8_t moisture_percent);
+
+// Drive all three LEDs as the battery sag measurement load. Synchronous;
+// briefly disturbs (but does not cancel) an active blink pattern.
+void status_led_load(bool on);

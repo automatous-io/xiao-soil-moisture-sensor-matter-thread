@@ -18,6 +18,7 @@
 
 #include "battery.h"
 #include "soil_probe.h"
+#include "status_led.h"
 #include "app_priv.h"
 
 #include <esp_check.h>
@@ -32,6 +33,7 @@ static const char *TAG = "battery";
 #define BATTERY_ADC_CHANNEL ADC_CHANNEL_0  // GPIO0
 #define SAMPLE_COUNT        5
 #define SAMPLE_GAP_MS       20
+#define LOAD_SETTLE_MS      30
 
 static adc_cali_handle_t s_cali;
 
@@ -60,11 +62,8 @@ esp_err_t battery_init(void)
     return ESP_OK;
 }
 
-esp_err_t battery_read(uint8_t *percent)
+static esp_err_t sample_avg_mv(adc_oneshot_unit_handle_t unit, int *avg_mv)
 {
-    adc_oneshot_unit_handle_t unit = soil_probe_adc_unit();
-    ESP_RETURN_ON_FALSE(unit != NULL, ESP_ERR_INVALID_STATE, TAG, "battery not initialized");
-
     int64_t sum = 0;
     int valid = 0;
     for (int i = 0; i < SAMPLE_COUNT; i++) {
@@ -81,13 +80,51 @@ esp_err_t battery_read(uint8_t *percent)
     if (valid == 0) {
         return ESP_FAIL;
     }
+    *avg_mv = (int)(sum / valid);
+    return ESP_OK;
+}
 
-    int mv = (int)(sum / valid);
-    int32_t pct = (100 * (mv - CONFIG_SOIL_BATTERY_EMPTY_MV)) /
+esp_err_t battery_read(battery_reading_t *reading, bool measure_sag)
+{
+    adc_oneshot_unit_handle_t unit = soil_probe_adc_unit();
+    ESP_RETURN_ON_FALSE(unit != NULL, ESP_ERR_INVALID_STATE, TAG, "battery not initialized");
+
+    // Persists between loaded measurements; -1 = never measured. Only
+    // meaningful on battery power (on USB the cell is unloaded).
+    static int s_last_sag_mv = -1;
+
+    ESP_RETURN_ON_ERROR(sample_avg_mv(unit, &reading->rest_mv), TAG, "rest measurement failed");
+
+    if (measure_sag) {
+        // Sag between resting and LED-loaded readings exposes internal
+        // resistance, which resting voltage alone cannot.
+        status_led_load(true);
+        vTaskDelay(pdMS_TO_TICKS(LOAD_SETTLE_MS));
+        esp_err_t err = sample_avg_mv(unit, &reading->loaded_mv);
+        status_led_load(false);
+        ESP_RETURN_ON_ERROR(err, TAG, "loaded measurement failed");
+
+        s_last_sag_mv = reading->rest_mv - reading->loaded_mv;
+        if (s_last_sag_mv < 0) {
+            s_last_sag_mv = 0;
+        }
+    } else {
+        reading->loaded_mv = reading->rest_mv;
+    }
+    reading->sag_mv = s_last_sag_mv;
+
+    int32_t pct = (100 * (reading->rest_mv - CONFIG_SOIL_BATTERY_EMPTY_MV)) /
                   (CONFIG_SOIL_BATTERY_FULL_MV - CONFIG_SOIL_BATTERY_EMPTY_MV);
     if (pct < 0) pct = 0;
     if (pct > 100) pct = 100;
-    *percent = (uint8_t)pct;
-    ESP_LOGI(TAG, "Battery: %d mV -> %u%%", mv, *percent);
+    reading->percent = (uint8_t)pct;
+
+    if (measure_sag) {
+        ESP_LOGI(TAG, "Battery: %d mV rest, %d mV loaded (sag %d mV) -> %u%%",
+                 reading->rest_mv, reading->loaded_mv, reading->sag_mv, reading->percent);
+    } else {
+        ESP_LOGI(TAG, "Battery: %d mV -> %u%% (last sag %d mV)",
+                 reading->rest_mv, reading->percent, reading->sag_mv);
+    }
     return ESP_OK;
 }

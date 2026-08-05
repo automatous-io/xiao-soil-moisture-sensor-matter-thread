@@ -51,4 +51,27 @@ menu "Soil Sensor Configuration"
         help
             ADC pin voltage that maps to 100% battery.
 
+    config SOIL_BATTERY_SAG_WARN_MV
+        int "Battery sag warning threshold (mV)"
+        default 60
+        help
+            Sag between resting and LED-loaded readings that reports charge
+            level Warning and sets BatReplacementNeeded. Healthy alkalines
+            sag under ~20 mV; worn cells far more.
+
+    config SOIL_BATTERY_SAG_CRIT_MV
+        int "Battery sag critical threshold (mV)"
+        default 150
+        help
+            Sag at which charge level reports Critical.
+
+    config SOIL_THREAD_TX_POWER_DBM
+        int "Thread radio TX power (dBm)"
+        default 10
+        range -24 20
+        help
+            802.15.4 transmit power. The driver default is +20 dBm
+            (~350 mA TX peaks); +10 dBm cuts peak battery draw roughly 3x
+            with range to spare for a home Thread mesh.
+
 endmenu

@@ -154,6 +154,27 @@ void status_led_stop(void)
     pm_release_if_held();
 }
 
+void status_led_load(bool on)
+{
+    // Hold the PM lock: light sleep isolates GPIOs and would drop the load
+    // mid-measurement.
+    static bool s_load_pm_held;
+    if (on) {
+        if (!s_load_pm_held && esp_pm_lock_acquire(s_pm_lock) == ESP_OK) {
+            s_load_pm_held = true;
+        }
+        gpio_set_level(PIN_LED_RED, 1);
+        gpio_set_level(PIN_LED_YELLOW, 1);
+        gpio_set_level(PIN_LED_GREEN, 1);
+    } else {
+        all_off();
+        if (s_load_pm_held) {
+            esp_pm_lock_release(s_pm_lock);
+            s_load_pm_held = false;
+        }
+    }
+}
+
 void status_led_moisture_blink(uint8_t moisture_percent)
 {
     led_color_t color;

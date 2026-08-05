@@ -15,13 +15,15 @@
 //
 
 // app_main.cpp
-//
 
 #include <esp_err.h>
 #include <esp_log.h>
 #include <esp_timer.h>
+#include <inttypes.h>
+#include <nvs.h>
 #include <nvs_flash.h>
 #include <driver/gpio.h>
+#include <esp_system.h>
 #if CONFIG_PM_ENABLE
 #include <esp_pm.h>
 #endif
@@ -29,7 +31,6 @@
 #include <esp_matter.h>
 #include <esp_matter_ota.h>
 
-#include <common_macros.h>
 #include <app_priv.h>
 #include "battery.h"
 #include "button.h"
@@ -38,11 +39,15 @@
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/ESP32/OpenthreadLauncher.h>
+#include <esp_openthread.h>
+#include <esp_openthread_lock.h>
+#include <openthread/platform/radio.h>
 #endif
 
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
-#include <clusters/soil_measurement/integration.h>
+#include <setup_payload/OnboardingCodesUtil.h>
+#include "soil_measurement_compat.h"
 
 static const char *TAG = "app_main";
 
@@ -103,33 +108,46 @@ static void report_moisture(uint8_t percent)
     }
 }
 
-static void report_battery(uint8_t percent)
+static void report_battery(const battery_reading_t &reading)
 {
-    static int s_last = -1;
-    if (s_last >= 0 && abs((int)percent - s_last) < 1) {
+    // Charge level factors in health: high sag = high internal resistance,
+    // even at a full resting voltage.
+    auto level = PowerSource::BatChargeLevelEnum::kOk;
+    if (reading.percent <= 10 || reading.sag_mv >= CONFIG_SOIL_BATTERY_SAG_CRIT_MV) {
+        level = PowerSource::BatChargeLevelEnum::kCritical;
+    } else if (reading.percent <= 20 || reading.sag_mv >= CONFIG_SOIL_BATTERY_SAG_WARN_MV) {
+        level = PowerSource::BatChargeLevelEnum::kWarning;
+    }
+    const bool replace = (reading.sag_mv >= CONFIG_SOIL_BATTERY_SAG_WARN_MV) || (reading.percent <= 10);
+
+    static int s_last_pct = -1;
+    static int s_last_level = -1;
+    static int s_last_replace = -1;
+    if ((int)reading.percent == s_last_pct && (int)level == s_last_level && (int)replace == s_last_replace) {
         return;
     }
-    s_last = percent;
+
+    const intptr_t packed = (intptr_t)reading.percent | ((intptr_t)level << 8) | ((intptr_t)replace << 16);
     CHIP_ERROR err = chip::DeviceLayer::PlatformMgr().ScheduleWork(
         [](intptr_t arg) {
-            uint8_t pct = (uint8_t)arg;
+            const uint8_t pct = arg & 0xFF;
+            const uint8_t lvl = (arg >> 8) & 0xFF;
+            const bool repl = ((arg >> 16) & 0x1) != 0;
             // BatPercentRemaining is in half-percent units (0-200).
             esp_matter_attr_val_t remaining = esp_matter_nullable_uint8(nullable<uint8_t>(pct * 2));
             attribute::update(0, PowerSource::Id, PowerSource::Attributes::BatPercentRemaining::Id,
                               &remaining);
-
-            auto level = PowerSource::BatChargeLevelEnum::kOk;
-            if (pct <= 10) {
-                level = PowerSource::BatChargeLevelEnum::kCritical;
-            } else if (pct <= 20) {
-                level = PowerSource::BatChargeLevelEnum::kWarning;
-            }
-            esp_matter_attr_val_t level_val = esp_matter_enum8((uint8_t)level);
+            esp_matter_attr_val_t level_val = esp_matter_enum8(lvl);
             attribute::update(0, PowerSource::Id, PowerSource::Attributes::BatChargeLevel::Id, &level_val);
+            esp_matter_attr_val_t repl_val = esp_matter_bool(repl);
+            attribute::update(0, PowerSource::Id, PowerSource::Attributes::BatReplacementNeeded::Id,
+                              &repl_val);
         },
-        (intptr_t)percent);
-    if (err != CHIP_NO_ERROR) {
-        s_last = -1;
+        packed);
+    if (err == CHIP_NO_ERROR) {
+        s_last_pct = reading.percent;
+        s_last_level = (int)level;
+        s_last_replace = (int)replace;
     }
 }
 
@@ -151,15 +169,28 @@ static void sample_task(void *arg)
         if (bits & (APP_SAMPLE_SILENT | APP_SAMPLE_SHOW_LED)) {
             uint8_t moisture = 0;
             int raw_mv = 0;
-            if (soil_probe_read(&moisture, &raw_mv) == ESP_OK) {
+            const bool have_moisture = (soil_probe_read(&moisture, &raw_mv) == ESP_OK);
+
+            // Sag measurement lights the LEDs: never on button presses,
+            // ~daily otherwise (internal resistance drifts over weeks).
+            static int64_t s_last_sag_us = -1;
+            const int64_t now_us = esp_timer_get_time();
+            const bool measure_sag = !(bits & APP_SAMPLE_SHOW_LED) &&
+                (s_last_sag_us < 0 || now_us - s_last_sag_us > (int64_t)24 * 60 * 60 * 1000000LL);
+
+            battery_reading_t battery;
+            const bool have_battery = (battery_read(&battery, measure_sag) == ESP_OK);
+            if (have_battery && measure_sag) {
+                s_last_sag_us = now_us;
+            }
+
+            if (have_moisture) {
+                report_moisture(moisture);
                 if (bits & APP_SAMPLE_SHOW_LED) {
                     status_led_moisture_blink(moisture);
                 }
-                report_moisture(moisture);
             }
-
-            uint8_t battery = 0;
-            if (battery_read(&battery) == ESP_OK) {
+            if (have_battery) {
                 report_battery(battery);
             }
         }
@@ -215,6 +246,62 @@ static void antenna_init(void)
     gpio_hold_en(PIN_ANTENNA_SEL);
     ESP_LOGI(TAG, "External antenna selected (GPIO%d low, GPIO%d high)", PIN_RF_SWITCH_EN, PIN_ANTENNA_SEL);
 }
+
+// ---------------------------------------------------------------------------
+// Boot diagnostics: brownout resets blink red at boot and bump an NVS
+// counter, observable without serial.
+
+static esp_reset_reason_t s_reset_reason;
+static uint32_t s_brownout_count;
+
+static void boot_diag_log(void);
+
+static void brownout_diag(esp_reset_reason_t reset_reason)
+{
+    s_reset_reason = reset_reason;
+    nvs_handle_t nvs;
+    if (nvs_open("diag", NVS_READWRITE, &nvs) == ESP_OK) {
+        nvs_get_u32(nvs, "brownouts", &s_brownout_count);
+        if (reset_reason == ESP_RST_BROWNOUT) {
+            s_brownout_count++;
+            nvs_set_u32(nvs, "brownouts", s_brownout_count);
+            nvs_commit(nvs);
+        }
+        nvs_close(nvs);
+    }
+    boot_diag_log();
+    if (reset_reason == ESP_RST_BROWNOUT) {
+        status_led_blink(LED_RED, 5, 100);
+    }
+}
+
+// Logged at boot and again after Matter start: the USB-JTAG monitor
+// reconnect drops the first ~1 s of boot output.
+static void boot_diag_log(void)
+{
+    if (s_reset_reason == ESP_RST_BROWNOUT) {
+        ESP_LOGW(TAG, "Reset reason: BROWNOUT — supply sagged (lifetime count: %" PRIu32 ")", s_brownout_count);
+    } else {
+        ESP_LOGI(TAG, "Reset reason: %d (lifetime brownouts: %" PRIu32 ")", s_reset_reason, s_brownout_count);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The 802.15.4 driver defaults to +20 dBm (~350 mA TX peaks); cap it once
+// the Thread stack is up.
+
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
+static void thread_txpower_set(void)
+{
+    esp_openthread_lock_acquire(portMAX_DELAY);
+    otInstance *instance = esp_openthread_get_instance();
+    if (instance != NULL) {
+        otPlatRadioSetTransmitPower(instance, CONFIG_SOIL_THREAD_TX_POWER_DBM);
+        ESP_LOGI(TAG, "Thread TX power capped at %d dBm", CONFIG_SOIL_THREAD_TX_POWER_DBM);
+    }
+    esp_openthread_lock_release();
+}
+#endif
 
 // ---------------------------------------------------------------------------
 // Matter callbacks
@@ -290,11 +377,14 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
 
 extern "C" void app_main()
 {
+    const esp_reset_reason_t reset_reason = esp_reset_reason();
+
     antenna_init();
 
     nvs_flash_init();
 
     ABORT_APP_ON_FAILURE(status_led_init() == ESP_OK, ESP_LOGE(TAG, "Failed to init status LEDs"));
+    brownout_diag(reset_reason);
     ABORT_APP_ON_FAILURE(soil_probe_init() == ESP_OK, ESP_LOGE(TAG, "Failed to init soil probe"));
     ABORT_APP_ON_FAILURE(battery_init() == ESP_OK, ESP_LOGE(TAG, "Failed to init battery ADC"));
     ABORT_APP_ON_FAILURE(button_init() == ESP_OK, ESP_LOGE(TAG, "Failed to init button"));
@@ -353,6 +443,12 @@ extern "C" void app_main()
 
     esp_err_t err = esp_matter::start(app_event_cb);
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
+
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
+    thread_txpower_set();
+#endif
+    boot_diag_log();
+    PrintOnboardingCodes(chip::RendezvousInformationFlags(chip::RendezvousInformationFlag::kBLE));
 
     sampling_start();
 }

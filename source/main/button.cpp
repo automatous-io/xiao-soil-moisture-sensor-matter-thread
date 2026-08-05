@@ -35,8 +35,8 @@ static const char *TAG = "button";
 
 static void button_press_down_cb(void *arg, void *data)
 {
-    // LIT ICD User Active Mode Trigger: any press puts the device in active
-    // mode so a controller can reach it for ActiveModeThreshold.
+    // LIT ICD User Active Mode Trigger: a press makes the device reachable
+    // for ActiveModeThreshold.
     CHIP_ERROR err = chip::DeviceLayer::PlatformMgr().ScheduleWork([](intptr_t) {
         chip::app::ICDNotifier::GetInstance().NotifyNetworkActivityNotification();
     });
