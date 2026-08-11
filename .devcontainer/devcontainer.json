@@ -20,6 +20,11 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/xiao-soil-moisture-sensor-matter-thread,type=bind",
 
   "containerEnv": {
+    // sdkconfig.defaults already carries CONFIG_IDF_TARGET, which IDF picks up
+    // on its own. Stating it here only makes the target explicit in build logs
+    // instead of reported as a guess. The two must agree — IDF errors out on a
+    // mismatch rather than picking one.
+    "IDF_TARGET": "esp32c6",
     "NINJA_JOBS": "8"
   },
 
