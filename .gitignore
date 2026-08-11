@@ -28,3 +28,5 @@ __pycache__/
 # IDF component manager
 idf_component_manager.yml
 .idf_component_manager/
+# VS Code devcontainer features lock (regenerated; no features declared)
+.devcontainer/devcontainer-lock.json
