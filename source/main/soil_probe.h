@@ -38,6 +38,6 @@ esp_err_t soil_probe_read(uint8_t *moisture_percent, int *raw_mv);
 // Returns ESP_OK if the new calibration was accepted.
 esp_err_t soil_probe_calibrate(void);
 
-// The shared ADC unit handle (ADC1), also used by battery.cpp — the oneshot
+// The shared ADC unit handle (ADC1), also used by battery.cpp - the oneshot
 // unit can only be claimed once per ADC peripheral.
 adc_oneshot_unit_handle_t soil_probe_adc_unit(void);

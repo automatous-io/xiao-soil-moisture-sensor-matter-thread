@@ -1,0 +1,69 @@
+# Copyright 2026 AUTOMATOUS.IO
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Builds the firmware from a version tag and attaches the merged .bin to a
+# draft release. The draft stays invisible until the release notes are
+# written and it is published by hand.
+#
+# The .ota asset is deliberately not attached yet: Matter OTA has not been
+# verified end to end. Once it is, add scripts/make-matter-ota.py to the
+# build command and source/automatous-io-*.ota to the release files.
+#
+# A workflow_dispatch run builds and uploads the .bin as a workflow artifact
+# without touching releases, for testing the pipeline without a tag.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build firmware and release .bin
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.5.2
+          target: esp32c6
+          path: source
+          command: idf.py build && python3 ../scripts/make-release-bin.py
+
+      # The script names the file from the firmware version. A mismatch here
+      # means the tag and CHIPProjectConfig.h disagree; fix the source or the
+      # tag, never the filename.
+      - name: Check the asset name matches the tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: test -f "source/automatous-io-xiao-soil-moisture-sensor-${GITHUB_REF_NAME}.bin"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: source/automatous-io-xiao-soil-moisture-sensor-*.bin
+          if-no-files-found: error
+
+      - name: Create draft release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: source/automatous-io-xiao-soil-moisture-sensor-*.bin

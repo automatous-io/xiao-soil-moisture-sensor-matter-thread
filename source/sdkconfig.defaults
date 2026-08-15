@@ -145,7 +145,7 @@ CONFIG_OPENTHREAD_LOG_LEVEL_DYNAMIC=n
 CONFIG_OPENTHREAD_LOG_LEVEL_NOTE=y
 CONFIG_OPENTHREAD_CLI=n
 
-# Thread device type: MTD (sleepy end device), LIT ICD — not a router.
+# Thread device type: MTD (sleepy end device), LIT ICD - not a router.
 CONFIG_OPENTHREAD_MTD=y
 
 # LwIP config for OpenThread
@@ -173,7 +173,7 @@ CONFIG_RTC_CLK_SRC_EXT_CRYS=n
 
 # Enable power management + light sleep.
 # PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP must stay off: it breaks the
-# button's GPIO wake (battery only — USB blocks light sleep).
+# button's GPIO wake (battery only - USB blocks light sleep).
 CONFIG_PM_ENABLE=y
 CONFIG_PM_DFS_INIT_AUTO=y
 CONFIG_ESP_SLEEP_POWER_DOWN_FLASH=y

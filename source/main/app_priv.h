@@ -37,15 +37,15 @@
     } while (0)
 
 // XIAO ESP32-C6 soil moisture kit pin map.
-#define PIN_BATTERY_ADC   GPIO_NUM_0   // D0 — battery voltage (divided)
-#define PIN_SOIL_ADC      GPIO_NUM_1   // D1 — soil probe output
-#define PIN_BUTTON        GPIO_NUM_2   // D2 — user button, active low
+#define PIN_BATTERY_ADC   GPIO_NUM_0   // D0 - battery voltage (divided)
+#define PIN_SOIL_ADC      GPIO_NUM_1   // D1 - soil probe output
+#define PIN_BUTTON        GPIO_NUM_2   // D2 - user button, active low
 #define PIN_RF_SWITCH_EN  GPIO_NUM_3   // drive LOW to enable the antenna RF switch
 #define PIN_ANTENNA_SEL   GPIO_NUM_14  // drive HIGH to select the external U.FL antenna
 #define PIN_LED_YELLOW    GPIO_NUM_18  // D10
 #define PIN_LED_GREEN     GPIO_NUM_19  // D8
 #define PIN_LED_RED       GPIO_NUM_20  // D9
-#define PIN_SOIL_PWM      GPIO_NUM_21  // D3 — 200 kHz probe excitation
+#define PIN_SOIL_PWM      GPIO_NUM_21  // D3 - 200 kHz probe excitation
 
 // Soil sensor endpoint id, set during data model creation in app_main.cpp.
 extern uint16_t soil_endpoint_id;

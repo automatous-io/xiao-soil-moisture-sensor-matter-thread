@@ -5,6 +5,10 @@ sdkconfig.old
 read-partition-table.bin
 .cache/
 
+# Release artifacts, built by scripts/make-release-bin.py and make-matter-ota.py
+*.ota
+automatous-io-*.bin
+
 # Managed components — downloaded automatically, not committed.
 # dependencies.lock IS committed so builds resolve identical versions.
 managed_components/

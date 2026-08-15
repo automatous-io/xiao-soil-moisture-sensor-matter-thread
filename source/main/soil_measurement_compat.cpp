@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// soil_measurement_compat.cpp — see header for why this exists.
+// soil_measurement_compat.cpp - see header for why this exists.
 
 #include "soil_measurement_compat.h"
 

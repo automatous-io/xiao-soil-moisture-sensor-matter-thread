@@ -81,7 +81,7 @@ static const SoilMeasurement::Attributes::SoilMoistureMeasurementLimits::TypeInf
 };
 
 // ---------------------------------------------------------------------------
-// Reporting — attribute updates must run on the Matter thread; readings are
+// Reporting - attribute updates must run on the Matter thread; readings are
 // passed through ScheduleWork's intptr_t argument.
 
 static void report_moisture(uint8_t percent)
@@ -152,7 +152,7 @@ static void report_battery(const battery_reading_t &reading)
 }
 
 // ---------------------------------------------------------------------------
-// Sample worker — the only place that touches the ADC and calibration flows.
+// Sample worker - the only place that touches the ADC and calibration flows.
 
 static void sample_task(void *arg)
 {
@@ -226,7 +226,7 @@ static void sampling_start(void)
 }
 
 // ---------------------------------------------------------------------------
-// Antenna — the XIAO ESP32-C6 routes RF through a switch: GPIO3 low enables
+// Antenna - the XIAO ESP32-C6 routes RF through a switch: GPIO3 low enables
 // the switch, GPIO14 high selects the external U.FL antenna (Seeed's design
 // for this kit). Held so the selection survives light sleep.
 
@@ -280,7 +280,7 @@ static void brownout_diag(esp_reset_reason_t reset_reason)
 static void boot_diag_log(void)
 {
     if (s_reset_reason == ESP_RST_BROWNOUT) {
-        ESP_LOGW(TAG, "Reset reason: BROWNOUT — supply sagged (lifetime count: %" PRIu32 ")", s_brownout_count);
+        ESP_LOGW(TAG, "Reset reason: BROWNOUT - supply sagged (lifetime count: %" PRIu32 ")", s_brownout_count);
     } else {
         ESP_LOGI(TAG, "Reset reason: %d (lifetime brownouts: %" PRIu32 ")", s_reset_reason, s_brownout_count);
     }

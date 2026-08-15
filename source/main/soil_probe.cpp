@@ -32,7 +32,7 @@
 
 static const char *TAG = "soil_probe";
 
-// 200 kHz excitation, 68% duty — same as the ESPHome firmware. At 200 kHz
+// 200 kHz excitation, 68% duty - same as the ESPHome firmware. At 200 kHz
 // the LEDC timer resolution caps out around 8 bits (80 MHz / 200 kHz = 400).
 #define EXCITATION_FREQ_HZ   200000
 #define EXCITATION_DUTY_8BIT 174  // 68% of 256
