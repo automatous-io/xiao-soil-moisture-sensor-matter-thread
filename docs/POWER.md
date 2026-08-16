@@ -60,16 +60,16 @@ Unit #2's first week on one AA cell, as reported by the firmware's own battery t
 
 ## The AA problem
 
-The AA cell feeds a boost converter that generates 3.3 V for the whole board. Two observations point at the power path rather than the radio. The same hardware drains far faster than it should on both the stock WiFi firmware and this Thread firmware, despite radically different radio duty cycles. And the USB-powered unit, which never light-sleeps at all, still draws little enough to sit at one power-bank percent for days.
+The AA cell feeds a TI TPS61021A boost converter that generates 3.3 V for the whole board ([power path](HARDWARE.md#power-path)). Two observations point at the power path rather than the radio. The same hardware drains far faster than it should on both the stock WiFi firmware and this Thread firmware, despite radically different radio duty cycles. And the USB-powered unit, which never light-sleeps at all, still draws little enough to sit at one power-bank percent for days.
 
 The open questions, in rough order of usefulness:
 
-1. Boost converter quiescent draw. What does the board pull from the cell with the radio asleep? Answering this needs a meter in series with the AA; even a cheap multimeter with a µA range helps.
+1. Board quiescent draw. What does the board pull from the cell with the radio asleep? The TPS61021A datasheet puts its quiescent current around 17 µA, which on its own would run an AA for years. A bench reading far above that points at light-load conversion efficiency or another leak on the board rather than the converter's idle draw. Answering this needs a meter in series with the AA; even a cheap multimeter with a µA range helps.
 2. Brownout resets. A worn AA, a boost converter, and a TX peak can form a reset loop that burns the cell. The lifetime brownout counter, printed on the serial console at boot, shows whether this is happening. A dead-in-days unit with dozens of brownouts would settle the question.
 3. Sag trajectory. Whether the daily sag measurement climbs steadily (a cell wearing out) or jumps (a cell being hammered) is visible in the serial logs.
 4. Lithium AA cells. Energizer Ultimate Lithium holds voltage far better under pulse loads than alkaline. Whether it changes the outcome is untested.
 
-If the quiescent-draw theory is right, the fix may be hardware, such as a different cell chemistry or a LiPo on the XIAO's battery pads bypassing the boost path, rather than firmware. That is worth knowing before anyone chases software micro-optimizations.
+If the power-path theory is right, the fix may be hardware, such as a different cell chemistry or a LiPo on the XIAO's battery pads bypassing the boost path, rather than firmware. That is worth knowing before anyone chases software micro-optimizations.
 
 ## Tuning
 

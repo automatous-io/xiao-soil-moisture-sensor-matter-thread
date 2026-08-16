@@ -42,7 +42,11 @@ The C6's RF output routes through a switch to an external U.FL antenna, which is
 
 ## Power path
 
-A single AA cell feeds a boost converter that supplies the 3.3 V rail. This is the component under investigation for the short AA runtime; see [the AA problem](POWER.md#the-aa-problem). The XIAO module also exposes LiPo battery pads, which may be a better-behaved power path, but that has not been tested with the kit's enclosure.
+A single AA cell feeds a TI [TPS61021A](https://www.ti.com/lit/ds/symlink/tps61021a.pdf) boost converter that supplies the 3.3 V rail. The part is identified from the [schematic](https://files.seeedstudio.com/wiki/XIAO_Soil_Moisture_Sensor/res/SCH.pdf) on the Seeed wiki. It starts at 0.9 V and operates down to 0.5 V input. Alkaline, NiMH, and lithium primary cells all work in the holder. A NiMH cell runs fine but its 1.2 V resting voltage reads low on the battery gauge, which maps 1.0 V to 0% and 1.5 V to 100%.
+
+Do not put a 3.7 V lithium-ion cell in the holder. The schematic names the battery connector CN_BAT_14500, but 14500 is the mechanical size code for an AA-format cell, not a lithium-ion endorsement. Above its 3.3 V setpoint the TPS61021A passes the input straight through to the output, which would put the cell voltage on the ESP32-C6's rail, past its 3.6 V absolute maximum. A lithium-ion or LiPo cell belongs on the XIAO module's battery pads instead, which go through the module's own regulator; that path may be better behaved than the boost converter but has not been tested with the kit's enclosure.
+
+The converter's enable pin is gated by USB 5 V presence. Plugging in USB shuts the boost down and takes the cell out of the load path entirely. That is the mechanism behind the battery gauge pinning at 0% on USB power ([battery sensing](#battery-sensing) above). The boost path is under investigation for the short AA runtime; see [the AA problem](POWER.md#the-aa-problem).
 
 ## Brownout behavior
 
