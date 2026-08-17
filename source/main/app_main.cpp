@@ -423,6 +423,10 @@ extern "C" void app_main()
                                                                    nullable<uint8_t>(0), nullable<uint8_t>(200));
 
     endpoint::soil_sensor::config_t soil_config;
+    // esp_matter leaves identify_type at None for this device type, and
+    // controllers hide the Identify button when they see it. The status LED is
+    // what the identify callback drives.
+    soil_config.identify.identify_type = (uint8_t)Identify::IdentifyTypeEnum::kVisibleIndicator;
     endpoint_t *soil_ep = endpoint::soil_sensor::create(node, &soil_config, ENDPOINT_FLAG_NONE, NULL);
     ABORT_APP_ON_FAILURE(soil_ep != nullptr, ESP_LOGE(TAG, "Failed to create soil sensor endpoint"));
     soil_endpoint_id = endpoint::get_id(soil_ep);
