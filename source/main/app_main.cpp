@@ -47,7 +47,7 @@
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
 #include <setup_payload/OnboardingCodesUtil.h>
-#include "soil_measurement_compat.h"
+#include <clusters/soil_measurement/integration.h>
 
 static const char *TAG = "app_main";
 

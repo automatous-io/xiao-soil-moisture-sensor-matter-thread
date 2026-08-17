@@ -15,19 +15,19 @@
 #
 
 #
-#   docker build -t automatous-io/xiao-soil-builder:idf-v5.5.2 .devcontainer
+#   docker build -t automatous-io/xiao-soil-builder:idf-v5.5.5 .devcontainer
 #
 # Stock ESP-IDF and nothing else. Matter arrives as the espressif/esp_matter
 # managed component from the ESP Component Registry, pinned by
 # source/dependencies.lock.
 #
-# espressif/idf:v5.5.2 would also work. It is not used because it carries
+# espressif/idf:v5.5.5 would also work. It is not used because it carries
 # IDF's full submodule history; the shallow clone below produces the same
 # toolchain in roughly a third of the disk.
 FROM ubuntu:24.04@sha256:561618e2c15bf2397621dd04f96926663a3b5616c189cf7e38db7e82f5c538ea
 
 # Matches the `idf` version recorded in source/dependencies.lock.
-ARG IDF_CHECKOUT_REF=v5.5.2
+ARG IDF_CHECKOUT_REF=v5.5.5
 ARG IDF_CLONE_URL=https://github.com/espressif/esp-idf.git
 ARG IDF_INSTALL_TARGETS=esp32c6
 
