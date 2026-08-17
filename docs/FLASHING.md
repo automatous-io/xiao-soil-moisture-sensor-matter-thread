@@ -17,7 +17,7 @@ You need the sensor, a USB-C data cable (not a charge-only cable), and a release
    esptool.py --chip esp32c6 erase_flash
    ```
 
-   `erase_flash` wipes everything, including stock WiFi credentials and any stored calibration. Between versions of this firmware, skip this step to keep commissioning intact; see [UPDATING.md](UPDATING.md).
+   `erase_flash` wipes everything, including stock WiFi credentials and any stored calibration. Skipping it is not enough to keep commissioning between versions of this firmware, because the merged image in the next step clears NVS on its own. To update while keeping your pairing and calibration, use one of the paths in [UPDATING.md](UPDATING.md) instead.
 
 3. Write the firmware:
 

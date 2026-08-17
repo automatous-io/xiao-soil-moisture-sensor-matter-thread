@@ -14,13 +14,15 @@ Commissioning needs three things. The first is a Thread border router on your ne
 2. Enable Test Net DCL, without which the server refuses test-credentialed devices: go to Settings, then Apps, then Matter Server, then Configuration, turn on **Enable test-net DCL usage**, and restart the add-on. The same setting later serves [OTA updates](UPDATING.md#matter-ota).
 3. Go to Settings, then Devices & Services, then Add Integration, then Matter, and scan the QR code from the serial console or enter the manual pairing code.
 4. Accept the uncertified-device prompt.
-5. The device commissions over BLE, joins your Thread network, and appears with soil moisture, battery, and battery-level entities.
+5. The device commissions over BLE, joins your Thread network, and appears with soil moisture, battery, and battery-level entities. Press the button once when it lands, since the entities can otherwise take up to 15 minutes to show up.
 
 <p align="center">
   <img src="images/matter-server-nodes.png" alt="Matter server node list showing two commissioned XIAO Soil Moisture Sensor MoT nodes flagged as ICD" width="520">
 </p>
 
 While the commissioning window is open the yellow LED blinks slowly. Success is three green blinks, and the first soil reading reports right after commissioning completes.
+
+A newly paired sensor can still appear in Home Assistant as a device with no entities at all. Home Assistant creates an entity only once it has read a value for the attribute behind it, and this firmware goes back to sleep after commissioning and checks in every 15 minutes. If that read misses a check-in, the device page stays empty until the next one. Press the button once and the entities populate immediately, because a press forces a sample and brings the radio up. An empty device page right after pairing is this timing, not a failed commission.
 
 ## Apple Home and Google Home
 

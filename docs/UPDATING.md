@@ -2,17 +2,19 @@
 
 # Updating Guide
 
-There are two update paths, and both keep your commissioning, Thread credentials, and soil calibration. Those live in NVS, which neither path touches.
+There are two update paths, and they differ in what they preserve. Matter OTA writes only the inactive app slot, so commissioning, Thread credentials, and soil calibration all survive it. The USB path depends on which image you write, and the merged release image does not preserve them.
 
 ## USB update
 
-Reflash the new merged image over USB-C:
+The merged release image is one contiguous file starting at offset `0x0`. It spans the `nvs` partition at `0x10000` and fills that range with padding, so writing it erases commissioning, Thread credentials, and soil calibration. Treat it as a first install or a deliberate clean slate, not as a way to move between versions:
 
 ```sh
 esptool.py --chip esp32c6 write_flash 0x0 automatous-io-xiao-soil-moisture-sensor-vX.Y.Z.bin
 ```
 
-From source, `idf.py flash` does the same. Do not run `erase_flash` between versions of this firmware; that is the step that wipes commissioning. After reboot the device rejoins Thread with its existing credentials and resumes reporting.
+Afterwards the device returns to out-of-box commissioning and needs pairing and calibration again. Remove the stale device from your controller first, because it points at a fabric the sensor no longer has.
+
+To update over USB and keep everything, flash from a source build with `idf.py flash`. That writes the bootloader, partition table, OTA boot selector, and app at their own offsets, and never touches `0x10000`. Skip `erase_flash` between versions; it clears NVS the same way the merged image does. After reboot the device rejoins Thread with its existing credentials and resumes reporting.
 
 ## Matter OTA
 
