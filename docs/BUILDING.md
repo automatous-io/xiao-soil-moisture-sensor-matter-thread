@@ -4,7 +4,7 @@
 
 ## Dev container
 
-The repo ships a [dev container](../.devcontainer/) pinned to ESP-IDF v5.5.2, the exact environment releases are built with. Open the repo folder in VS Code with the Dev Containers extension (or any devcontainer-compatible tool), accept "Reopen in Container," and build from the container terminal:
+The repo ships a [dev container](../.devcontainer/) pinned to ESP-IDF v5.5.5, the exact environment releases are built with. Open the repo folder in VS Code with the Dev Containers extension (or any devcontainer-compatible tool), accept "Reopen in Container," and build from the container terminal:
 
 ```sh
 cd source
@@ -31,11 +31,11 @@ On Linux with Docker Engine, the container can flash directly. Append your seria
 
 ## Manual toolchain
 
-Without the container, install [ESP-IDF v5.5.2](https://docs.espressif.com/projects/esp-idf/en/v5.5.2/esp32c6/get-started/index.html), export its environment, and run the same `idf.py build` from `source/`. The target (`esp32c6`) and all project settings come from [sdkconfig.defaults](../source/sdkconfig.defaults). Other IDF versions may work but are unsupported; the combination of Matter, OpenThread, and power management is sensitive to toolchain drift.
+Without the container, install [ESP-IDF v5.5.5](https://docs.espressif.com/projects/esp-idf/en/v5.5.5/esp32c6/get-started/index.html), export its environment, and run the same `idf.py build` from `source/`. The target (`esp32c6`) and all project settings come from [sdkconfig.defaults](../source/sdkconfig.defaults). Other IDF versions may work but are unsupported; the combination of Matter, OpenThread, and power management is sensitive to toolchain drift.
 
 ## What's in the build
 
-esp_matter comes from the component registry as a managed component (`^1.5.1`); no esp-matter clone or submodules are needed. The [soil_measurement_compat](../source/main/soil_measurement_compat.h) shim exists because the 1.5.1 component ships the SoilMeasurement server cluster but not the soil-sensor endpoint helper that esp-matter `main` added after the branch cut; it mirrors those upstream pieces and gets deleted once a component release includes them.
+esp_matter comes from the component registry as a managed component (`^1.6.0`); no esp-matter clone or submodules are needed. The 1.6.0 component ships the Soil Sensor endpoint helper and the `SetSoilMoisture` glue natively, so the project uses them directly. Earlier releases carried a `soil_measurement_compat` shim that mirrored those pieces while the 1.5.1 component lacked them; it was deleted in v0.3.0.
 
 The device identity uses test credentials. The example DAC provider only embeds keys for PIDs `0x8000` through `0x801F`, and this project uses `0x8010`. A PID outside that range needs a factory partition from esp-matter's `mfg_tool`.
 

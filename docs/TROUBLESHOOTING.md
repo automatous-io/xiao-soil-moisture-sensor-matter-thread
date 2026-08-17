@@ -43,7 +43,7 @@ Battery percentage looks wrong on USB, usually reading 0%. That is expected. On 
 
 Five red blinks at every boot, or the device keeps rebooting on battery. Those are brownouts: the cell cannot hold voltage through radio transmit peaks. Replace the cell, noting that lithium AA holds up better than alkaline, and read the lifetime brownout counter off the serial console. That counter is exactly the data the project is collecting; please [file a report](POWER.md#file-a-field-report).
 
-The Identify button is missing or does nothing in Home Assistant. Known issue in v0.2.0: the firmware advertises its identify type as None, and controllers take it at its word. The LED blink logic is present and a fix is on the [roadmap](ROADMAP.md#next-release-v030) for the next release.
+The Identify button is missing or does nothing in Home Assistant. This was a defect in v0.2.0, which advertised its identify type as None. Controllers took it at its word and hid the button, even though the LED blink logic was there. v0.3.0 advertises the status LED as a visible indicator, so update the firmware.
 
 No serial port appears over USB. Use a data-capable USB-C cable, and hold BOOT while plugging in to force the bootloader. The console is the C6's native USB-Serial/JTAG at 115200 baud.
 

@@ -51,12 +51,13 @@ This table is the reason the page exists. [Add your row](#file-a-field-report).
 |---|---|---|---|---|---|
 | 1 | AA for the first three days, then USB-C from a 50,000 mAh power bank; ICD Standard Mode | v0.2.0 | 900 s / +10 dBm | Aug 5, 2026 | On AA it went from 100% to 87% in three days, the same pace as unit #2's cell, and was deliberately moved to the power bank. Since Aug 8 the bank's indicator has dropped from 29% to 26% over several days, which extrapolates to months per charge even though USB power disables light sleep and Standard Mode polls faster. Reports reliably from a good distance to the border router |
 | 2 | 1x AA alkaline, LIT Battery Saver Mode | v0.2.0 | 900 s / +10 dBm | Aug 5, 2026 | 100% on Aug 6 down to 70% on Aug 13, about 30 percentage points in the first week, and still running. The pace points to weeks per cell rather than months. Investigation below |
+| 3 | 1x AA, fresh cell | v0.2.0, then v0.3.0 over OTA | 900 s / +10 dBm | Aug 16, 2026 | Flashed v0.2.0 over USB, then updated to v0.3.0 over Thread. The OTA alone took the cell from 100% to 87%, which is the clearest measurement so far of what an over-the-air update costs on battery. The endurance run starts from there |
 
 <p align="center">
   <img src="images/ha-battery-history.png" alt="Home Assistant history graph of unit 2's AA battery percentage declining from 100% on Aug 6 to 70% on Aug 13" width="820">
 </p>
 
-Unit #2's first week on one AA cell, as reported by the firmware's own battery telemetry. The two vertical drops to zero are battery pulls during testing, not the cell. Two units under one roof is not a dataset, which is why the [field report](#file-a-field-report) exists.
+Unit #2's first week on one AA cell, as reported by the firmware's own battery telemetry. The two vertical drops to zero are battery pulls during testing, not the cell. Three units under one roof is not a dataset, which is why the [field report](#file-a-field-report) exists.
 
 ## The AA problem
 

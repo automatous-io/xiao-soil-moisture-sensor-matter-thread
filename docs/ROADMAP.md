@@ -6,10 +6,9 @@ What is planned and what is known to be missing. This is a spare-time project; t
 
 ## Next release (v0.3.0)
 
-- Move to the esp_matter 1.6 component, which ships the Soil Sensor endpoint natively, and delete the `soil_measurement_compat` shim ([BUILDING.md](BUILDING.md#whats-in-the-build)).
-- Fix Identify. v0.2.0 advertises its identify type as None, and controllers hide or ignore the Identify button even though the LED blink logic is present ([TROUBLESHOOTING.md](TROUBLESHOOTING.md#common-issues)). The fix advertises the LED as a visible indicator.
-- Bump the dev container to ESP-IDF v5.5.5, the version the 1.6 component recommends.
-- Deliver the release over Matter OTA from v0.2.0, as the first end-to-end verification of the OTA path ([UPDATING.md](UPDATING.md#matter-ota)).
+Verified and ready to tag: the esp_matter 1.6 component with the `soil_measurement_compat` shim deleted, the Identify fix, and the ESP-IDF v5.5.5 toolchain bump. Identify, the button, moisture reporting, and battery operation off USB are all confirmed on hardware, and the build was delivered over Matter OTA from v0.2.0 with commissioning intact, which is the first end-to-end run of that path ([UPDATING.md](UPDATING.md#matter-ota)). See the [changelog](../CHANGELOG.md) for what changed.
+
+Endurance on a cell is still open, and it is tracked below rather than here, since it does not gate the release.
 
 ## Open investigations
 

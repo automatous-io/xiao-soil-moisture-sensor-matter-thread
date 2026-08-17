@@ -38,12 +38,12 @@ The Soil Sensor device type was added in Matter 1.5 and controllers are only now
 
 ## Status
 
-Current release: v0.2.0 (beta).
+Current release: v0.3.0 (beta).
 
 | | |
 |---|---|
-| ✅ Works | Thread commissioning over BLE, soil moisture reporting to Home Assistant, battery percentage and charge level with a replace-battery flag, battery health via internal-resistance (sag) measurement, button-triggered calibration persisted to NVS, sleepy end device (LIT ICD) operation with light sleep, multi-fabric, brownout diagnostics |
-| 🔬 Collecting data | Real-world battery life (see [POWER.md](docs/POWER.md)), calibration defaults across soil types, border router and ecosystem coverage. Matter OTA is built in (A/B partitions) but not yet exercised over Thread |
+| ✅ Works | Thread commissioning over BLE, soil moisture reporting to Home Assistant, battery percentage and charge level with a replace-battery flag, battery health via internal-resistance (sag) measurement, button-triggered calibration persisted to NVS, Identify from a controller, sleepy end device (LIT ICD) operation with light sleep, multi-fabric, brownout diagnostics, Matter OTA over Thread |
+| 🔬 Collecting data | Real-world battery life (see [POWER.md](docs/POWER.md)), calibration defaults across soil types, border router and ecosystem coverage |
 | ⚠️ Known limits | AA battery life is on pace for weeks per cell, not months: the first cell dropped about 30 percentage points in its first week. The radio is no longer the obvious bottleneck, and the investigation into what is happens in [POWER.md](docs/POWER.md). USB-powered operation is solid. |
 
 <p align="center">
@@ -68,10 +68,11 @@ Later updates can go over the air via [Matter OTA](docs/UPDATING.md), or over th
 - Battery percentage, charge level (Ok / Warning / Critical), and a `BatReplacementNeeded` flag driven by cell health rather than voltage alone
 - Battery health via sag measurement: the firmware briefly loads the cell with its own LEDs about once a day and reads voltage sag as an internal-resistance proxy that flags worn cells before they die
 - On-device calibration: triple-press the button and follow the LED prompts with dry air and a glass of water; calibration persists across reboots and reflashes
+- Identify from the controller: the status LED blinks yellow so you can tell which sensor you are looking at when several are paired
 - Local sampling with delta reporting: the probe is sampled every 15 minutes (configurable) and the radio is only used when the reading changes
 - TX power capped at +10 dBm instead of the driver's +20 dBm default, cutting peak battery draw roughly 3x
 - Brownout diagnostics: brownout resets blink red at boot and increment a lifetime counter in NVS
-- Matter OTA requestor with A/B app partitions, designed for updates that keep commissioning (not yet exercised over Thread; see [UPDATING.md](docs/UPDATING.md))
+- Matter OTA requestor with A/B app partitions: updates arrive over Thread with no cable and keep commissioning, verified from v0.2.0 to v0.3.0 (see [UPDATING.md](docs/UPDATING.md))
 - Multi-fabric: pair with more than one Matter controller at the same time
 
 ## Button & LEDs
@@ -88,6 +89,7 @@ The full reference is in [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md#led-refere
 | LED pattern | Meaning |
 |---|---|
 | Yellow slow blink | Commissioning window open |
+| Yellow medium blink | Identify; a controller asked the device to point itself out |
 | Green, 3 blinks | Commissioning complete |
 | Red, 5 blinks at boot | Brownout reset detected; check the power source |
 
@@ -128,7 +130,7 @@ As of August 2026, Home Assistant is the only major ecosystem that understands t
 ├── scripts/             # Release asset builders (.bin and .ota)
 ├── docs/                # Guides and images
 ├── .github/             # Release workflow
-└── .devcontainer/       # Pinned build environment (ESP-IDF v5.5.2)
+└── .devcontainer/       # Pinned build environment (ESP-IDF v5.5.5)
 ```
 
 ## Why?
