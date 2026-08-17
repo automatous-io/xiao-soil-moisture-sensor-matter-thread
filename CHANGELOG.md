@@ -4,6 +4,15 @@
 
 All notable changes to this firmware. Versions follow [semver](https://semver.org/); the Matter software version integer for each release is noted since OTA uses it.
 
+## v0.3.0 - Identify fix & toolchain refresh
+
+*Software version `0x00000300`*
+
+- **Fixed:** the Identify button. The soil sensor endpoint advertised its identify type as None; controllers hid or ignored the button even though the LED blink logic was present. It now advertises the status LED as a visible indicator
+- **Changed:** esp_matter moved from 1.5.1 to 1.6.0. The 1.6.0 component ships the Soil Sensor endpoint helper and the `SetSoilMoisture` glue, so the `soil_measurement_compat` shim that mirrored them is deleted
+- **Changed:** builds pinned to ESP-IDF v5.5.5, up from v5.5.2, in both the dev container and the release workflow
+- No change to sampling, power management, button handling, or battery reporting
+
 ## v0.2.0 - Battery health & diagnostics
 
 *Software version `0x00000200`*
