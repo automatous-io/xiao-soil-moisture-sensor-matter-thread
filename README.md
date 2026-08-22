@@ -47,7 +47,7 @@ Current release: v0.4.0 (beta).
 | ⚠️ Known limits | AA battery life is on pace for weeks per cell, not months. The first cell dropped about 30 points on the battery gauge in its first week, though that gauge is linear in voltage rather than in capacity and overstates the early decline ([POWER.md](docs/POWER.md#battery-telemetry-and-health)). The radio is no longer the obvious bottleneck, and the investigation into what is going on happens in [POWER.md](docs/POWER.md). USB-powered operation is solid. |
 
 <p align="center">
-  <img src="docs/images/ha-device-page.png" alt="Home Assistant device page for the sensor, showing moisture, firmware, and battery entities" width="700">
+  <img src="docs/images/ha-device-page-0.4.0.png" alt="Home Assistant device page for the sensor, showing moisture, firmware, and battery entities" width="500">
 </p>
 
 Battery life is an open experiment run in public. Two units are in the field, their data lives in [POWER.md](docs/POWER.md#field-data), and if you flash a unit of your own, an [issue with your battery data](../../issues/new) adds a row. Contributions of any kind are welcome: [CONTRIBUTING.md](docs/CONTRIBUTING.md).
