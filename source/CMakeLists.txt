@@ -6,8 +6,8 @@ if(NOT "${IDF_TARGET}" STREQUAL "esp32c6" AND NOT "${IDF_TARGET}" STREQUAL "")
     message(FATAL_ERROR "Unsupported IDF_TARGET: this firmware targets the XIAO ESP32-C6 only")
 endif()
 
-set(PROJECT_VER "0.3.0")
-set(PROJECT_VER_NUMBER 768)
+set(PROJECT_VER "0.4.0")
+set(PROJECT_VER_NUMBER 1024)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 

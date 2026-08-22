@@ -4,16 +4,17 @@
 
 What is planned and what is known to be missing. This is a spare-time project; the order is firm, the dates are not.
 
-## Next release (v0.3.0)
+## Next release (v0.4.0)
 
-Verified and ready to tag: the esp_matter 1.6 component with the `soil_measurement_compat` shim deleted, the Identify fix, and the ESP-IDF v5.5.5 toolchain bump. Identify, the button, moisture reporting, and battery operation off USB are all confirmed on hardware, and the build was delivered over Matter OTA from v0.2.0 with commissioning intact, which is the first end-to-end run of that path ([UPDATING.md](UPDATING.md#matter-ota)). See the [changelog](../CHANGELOG.md) for what changed.
+Verified and ready to tag: cell voltage over Matter. The Power Source cluster now carries `BatVoltage`, the resting measurement in millivolts, because the battery percentage is a linear voltage map that pins at 100% on a lithium cell, and the raw millivolts previously reached only the serial console, which a running battery unit cannot use. Confirmed on hardware in Home Assistant and delivered to a deployed unit over Matter OTA from v0.3.0. See the [changelog](../CHANGELOG.md) for what changed.
 
 Endurance on a cell is still open, and it is tracked below rather than here, since it does not gate the release.
 
 ## Open investigations
 
-- AA battery life. A cell lasts weeks rather than months, and the evidence so far points at the board's power path rather than the radio. The data and the open questions live in [POWER.md](POWER.md#the-aa-problem), and field reports are the fastest way to move this.
-- Alternative power. Lithium AA cells behave differently under pulse loads, and the XIAO's LiPo pads bypass the boost converter entirely. Both untested.
+- AA battery life. A cell lasts weeks rather than months, and the radio duty cycle does not account for it. That leaves the chip's light sleep floor and the board's boost converter as the two candidates, and telling them apart needs a current measurement taken on battery with USB disconnected, since connecting USB removes both. The data and the open questions live in [POWER.md](POWER.md#the-aa-problem), and field reports are the fastest way to move this.
+- A chemistry-aware battery percentage. The mapping is linear in voltage and assumes an alkaline cell, so it overstates the early decline on alkaline and pins at 100% on a lithium primary ([POWER.md](POWER.md#battery-telemetry-and-health)). The replacement should be a piecewise curve fitted from the voltage the field units now report, rather than from a datasheet.
+- Alternative power. Lithium AA is under test on two units as of August 2026. The XIAO's LiPo pads bypass the boost converter entirely and remain untested.
 
 ## Considered
 

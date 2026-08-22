@@ -35,13 +35,17 @@ The LIT configuration is visible from the controller side. The Matter server's n
 
 ## Battery telemetry and health
 
-The firmware exposes three values over Matter, through the Power Source cluster on the root endpoint, and they appear as entities in Home Assistant. Battery percentage is a linear map of the resting cell voltage through the on-board divider, where 1.0 V at the ADC pin reads 0% and 1.5 V reads 100%, matching the stock firmware's mapping. Charge level reports Ok, Warning at 20% or a worn cell, and Critical at 10% or a dying cell. `BatReplacementNeeded` is driven by cell health rather than voltage alone.
+The firmware exposes four values over Matter, through the Power Source cluster on the root endpoint, and they appear as entities in Home Assistant. Cell voltage is the resting measurement in millivolts, reported as measured with no mapping applied. Battery percentage is a linear map of that voltage through the on-board divider, where 1.0 V at the ADC pin reads 0% and 1.5 V reads 100%, matching the stock firmware's mapping. Charge level reports Ok, Warning at 20% or a worn cell, and Critical at 10% or a dying cell. `BatReplacementNeeded` is driven by cell health rather than voltage alone.
+
+The percentage mapping assumes an alkaline cell and is linear in voltage rather than in capacity, which makes it a rough guide and not a fuel gauge. An alkaline drops quickly from 1.5 V to about 1.35 V while giving up only the first fifth or so of its capacity, then sits on a long plateau where most of the remaining capacity is spent, so the reported percentage falls fast in the first week and then slows. A lithium primary cell is served worse still, because it rests above 1.5 V for most of its life and the percentage therefore pins at 100% until the cell is nearly finished. Cell voltage is reported precisely because it does not depend on any of that. `SOIL_BATTERY_EMPTY_MV` and `SOIL_BATTERY_FULL_MV` move the endpoints for a different chemistry, though the mapping stays linear between them.
 
 The health measurement works like this: roughly once a day the firmware measures the cell voltage, turns on all three LEDs as a known load for about 150 ms, and measures again. The sag between the two readings is a proxy for internal resistance. A fresh alkaline sags under about 20 mV and a worn one far more. Sag of 60 mV or more reports Warning and sets the replace flag, and 150 mV or more reports Critical. A tired cell gets flagged weeks before it goes flat.
 
 Every brownout reset, the failure mode of a worn AA supplying a radio transmit peak, blinks red five times at boot and increments a lifetime counter in NVS. The counter prints on the serial console at every boot and can be checked months later.
 
-Raw voltages (rest, loaded, and sag in mV) print to the serial console at each sample. Only the derived values go over Matter.
+Rest, loaded, and sag voltages all print to the serial console at each sample. Of those, the resting cell voltage also goes over Matter, while the loaded and sag readings stay on the console. The console is not an option on a running battery unit, because connecting USB disables the boost converter and takes the cell out of the load path ([HARDWARE.md](HARDWARE.md#power-path)), which is the reason the resting voltage is reported over Matter at all.
+
+Home Assistant rounds sensor values to a default display precision, so the voltage entity can read a flat 2 V on a fresh lithium cell. Raising the decimals under the entity's Display precision setting shows the real figure.
 
 ## Field data
 
@@ -49,7 +53,7 @@ This table is the reason the page exists. [Add your row](#file-a-field-report).
 
 | # | Power source | Firmware | Interval / TX | Started | Result so far |
 |---|---|---|---|---|---|
-| 1 | AA for the first three days, then USB-C from a 50,000 mAh power bank; ICD Standard Mode | v0.2.0 | 900 s / +10 dBm | Aug 5, 2026 | On AA it went from 100% to 87% in three days, the same pace as unit #2's cell, and was deliberately moved to the power bank. Since Aug 8 the bank's indicator has dropped from 29% to 26% over several days, which extrapolates to months per charge even though USB power disables light sleep and Standard Mode polls faster. Reports reliably from a good distance to the border router |
+| 1 | AA for the first three days, then USB-C from a 50,000 mAh power bank; ICD Standard Mode | v0.2.0 | 900 s / +10 dBm | Aug 5, 2026 | On AA it went from 100% to 87% in three days, the same pace as unit #2's cell, and was deliberately moved to the power bank. Since Aug 8 the bank's indicator has dropped from 29% to 24% over about a week, which extrapolates to months per charge even though USB power disables light sleep and Standard Mode polls faster. Reports reliably from a good distance to the border router |
 | 2 | 1x AA alkaline, LIT Battery Saver Mode | v0.2.0 | 900 s / +10 dBm | Aug 5, 2026 | 100% on Aug 6 down to 70% on Aug 13, about 30 percentage points in the first week, and still running. The pace points to weeks per cell rather than months. Investigation below |
 | 3 | 1x AA, fresh cell | v0.2.0, then v0.3.0 over OTA | 900 s / +10 dBm | Aug 16, 2026 | Flashed v0.2.0 over USB, then updated to v0.3.0 over Thread. The OTA alone took the cell from 100% to 87%, which is the clearest measurement so far of what an over-the-air update costs on battery. The endurance run starts from there |
 
@@ -87,7 +91,7 @@ If you run a non-default configuration, say so in your field report. Those runs 
 
 ## File a field report
 
-Open an [issue](../../../issues/new) with your power source and cell type, the firmware version, any non-default tuning, the start date, and the outcome so far. A screenshot of the Home Assistant battery-percentage history graph carries most of the story. If you have serial access, include the lifetime brownout count and a recent sag reading from the logs.
+Open an [issue](../../../issues/new) with your power source and cell type, the firmware version, any non-default tuning, the start date, and the outcome so far. A screenshot of the Home Assistant cell voltage history graph carries most of the story, and it beats the percentage graph because it does not depend on your cell chemistry matching the firmware's mapping. If you have serial access, include the lifetime brownout count and a recent sag reading from the logs.
 
 Negative results are as valuable as positive ones. A report that reads "died in 4 days on alkaline, 37 brownouts" is exactly the kind of row the field data table needs.
 
