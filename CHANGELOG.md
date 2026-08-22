@@ -4,6 +4,13 @@
 
 All notable changes to this firmware. Versions follow [semver](https://semver.org/); the Matter software version integer for each release is noted since OTA uses it.
 
+## v0.4.0 - Cell voltage reporting
+
+*Software version `0x00000400`*
+
+- **Added:** cell voltage over Matter. The Power Source cluster now carries `BatVoltage`, the resting measurement in millivolts, updated on a change of 20 mV or more so that ADC jitter does not wake the radio every sample. The battery percentage is a linear voltage map that pins at 100% on a lithium cell and compresses the alkaline curve, and the raw millivolts previously reached only the serial console, which a running battery unit cannot use because connecting USB disables the boost converter and takes the cell out of the load path.
+- No change to sampling, power management, button handling, or calibration
+
 ## v0.3.0 - Identify fix & toolchain refresh
 
 *Software version `0x00000300`*

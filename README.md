@@ -38,13 +38,13 @@ The Soil Sensor device type was added in Matter 1.5 and controllers are only now
 
 ## Status
 
-Current release: v0.3.0 (beta).
+Current release: v0.4.0 (beta).
 
 | | |
 |---|---|
-| ✅ Works | Thread commissioning over BLE, soil moisture reporting to Home Assistant, battery percentage and charge level with a replace-battery flag, battery health via internal-resistance (sag) measurement, button-triggered calibration persisted to NVS, Identify from a controller, sleepy end device (LIT ICD) operation with light sleep, multi-fabric, brownout diagnostics, Matter OTA over Thread |
+| ✅ Works | Thread commissioning over BLE, soil moisture reporting to Home Assistant, cell voltage, battery percentage and charge level with a replace-battery flag, battery health via internal-resistance (sag) measurement, button-triggered calibration persisted to NVS, Identify from a controller, sleepy end device (LIT ICD) operation with light sleep, multi-fabric, brownout diagnostics, Matter OTA over Thread |
 | 🔬 Collecting data | Real-world battery life (see [POWER.md](docs/POWER.md)), calibration defaults across soil types, border router and ecosystem coverage |
-| ⚠️ Known limits | AA battery life is on pace for weeks per cell, not months: the first cell dropped about 30 percentage points in its first week. The radio is no longer the obvious bottleneck, and the investigation into what is happens in [POWER.md](docs/POWER.md). USB-powered operation is solid. |
+| ⚠️ Known limits | AA battery life is on pace for weeks per cell, not months. The first cell dropped about 30 points on the battery gauge in its first week, though that gauge is linear in voltage rather than in capacity and overstates the early decline ([POWER.md](docs/POWER.md#battery-telemetry-and-health)). The radio is no longer the obvious bottleneck, and the investigation into what is going on happens in [POWER.md](docs/POWER.md). USB-powered operation is solid. |
 
 <p align="center">
   <img src="docs/images/ha-device-page.png" alt="Home Assistant device page for the sensor, showing moisture, firmware, and battery entities" width="700">
@@ -65,7 +65,7 @@ Later updates can go over the air via [Matter OTA](docs/UPDATING.md), or over th
 - Matter over Thread: native, local, no cloud, no WiFi, no ESPHome dependency
 - Soil Sensor device type (0x0045) with the Matter 1.5 SoilMeasurement cluster, not a humidity-sensor workaround
 - Sleepy end device: Thread MTD running as a LIT intermittently connected device, light sleep between samples
-- Battery percentage, charge level (Ok / Warning / Critical), and a `BatReplacementNeeded` flag driven by cell health rather than voltage alone
+- Cell voltage in millivolts, battery percentage, charge level (Ok / Warning / Critical), and a `BatReplacementNeeded` flag driven by cell health rather than voltage alone
 - Battery health via sag measurement: the firmware briefly loads the cell with its own LEDs about once a day and reads voltage sag as an internal-resistance proxy that flags worn cells before they die
 - On-device calibration: triple-press the button and follow the LED prompts with dry air and a glass of water; calibration persists across reboots and reflashes
 - Identify from the controller: the status LED blinks yellow so you can tell which sensor you are looking at when several are paired
