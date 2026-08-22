@@ -60,6 +60,10 @@ uint16_t soil_endpoint_id = 0;
 
 constexpr auto k_timeout_seconds = 300;
 
+// Averaged ADC reads still jitter by a few mV. Report the cell voltage only on
+// a change big enough to be a real trend, so the radio is not woken by noise.
+constexpr int k_battery_report_delta_mv = 20;
+
 static TaskHandle_t s_sample_task;
 static esp_timer_handle_t s_sample_timer;
 
@@ -123,16 +127,22 @@ static void report_battery(const battery_reading_t &reading)
     static int s_last_pct = -1;
     static int s_last_level = -1;
     static int s_last_replace = -1;
-    if ((int)reading.percent == s_last_pct && (int)level == s_last_level && (int)replace == s_last_replace) {
+    static int s_last_mv = -1;
+    const bool mv_changed = (s_last_mv < 0) || (abs(reading.rest_mv - s_last_mv) >= k_battery_report_delta_mv);
+    if (!mv_changed && (int)reading.percent == s_last_pct && (int)level == s_last_level &&
+        (int)replace == s_last_replace) {
         return;
     }
 
-    const intptr_t packed = (intptr_t)reading.percent | ((intptr_t)level << 8) | ((intptr_t)replace << 16);
+    // Bit layout: percent 0-7, charge level 8-15, replace 16, millivolts 17-31.
+    const intptr_t packed = (intptr_t)reading.percent | ((intptr_t)level << 8) |
+                            ((intptr_t)replace << 16) | ((intptr_t)reading.rest_mv << 17);
     CHIP_ERROR err = chip::DeviceLayer::PlatformMgr().ScheduleWork(
         [](intptr_t arg) {
             const uint8_t pct = arg & 0xFF;
             const uint8_t lvl = (arg >> 8) & 0xFF;
             const bool repl = ((arg >> 16) & 0x1) != 0;
+            const uint32_t mv = (uint32_t)arg >> 17;
             // BatPercentRemaining is in half-percent units (0-200).
             esp_matter_attr_val_t remaining = esp_matter_nullable_uint8(nullable<uint8_t>(pct * 2));
             attribute::update(0, PowerSource::Id, PowerSource::Attributes::BatPercentRemaining::Id,
@@ -142,12 +152,15 @@ static void report_battery(const battery_reading_t &reading)
             esp_matter_attr_val_t repl_val = esp_matter_bool(repl);
             attribute::update(0, PowerSource::Id, PowerSource::Attributes::BatReplacementNeeded::Id,
                               &repl_val);
+            esp_matter_attr_val_t voltage = esp_matter_nullable_uint32(nullable<uint32_t>(mv));
+            attribute::update(0, PowerSource::Id, PowerSource::Attributes::BatVoltage::Id, &voltage);
         },
         packed);
     if (err == CHIP_NO_ERROR) {
         s_last_pct = reading.percent;
         s_last_level = (int)level;
         s_last_replace = (int)replace;
+        s_last_mv = reading.rest_mv;
     }
 }
 
@@ -421,6 +434,10 @@ extern "C" void app_main()
     // BatPercentRemaining is in half-percent units, spec range 0-200.
     cluster::power_source::attribute::create_bat_percent_remaining(ps_cluster, nullable<uint8_t>(),
                                                                    nullable<uint8_t>(0), nullable<uint8_t>(200));
+    // Ground truth for endurance testing: the percent mapping is chemistry
+    // specific and pins at 100% on lithium, but millivolts are always true.
+    cluster::power_source::attribute::create_bat_voltage(ps_cluster, nullable<uint32_t>(),
+                                                         nullable<uint32_t>(0), nullable<uint32_t>(0xFFFF));
 
     endpoint::soil_sensor::config_t soil_config;
     // esp_matter leaves identify_type at None for this device type, and
