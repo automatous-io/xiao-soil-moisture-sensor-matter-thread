@@ -28,7 +28,7 @@ The ADC runs at 12 dB attenuation with ESP-IDF curve-fitting calibration, which 
 
 ## Battery sensing
 
-The AA cell voltage arrives at GPIO0 through a 100 kΩ series resistor with a capacitor to ground, so the pin sees the cell voltage directly, where 1000 mV maps to 0% and 1500 mV to 100%, matching the stock firmware. Beyond resting voltage, the firmware measures sag under load by lighting all three LEDs for about 150 ms as a known load and comparing the loaded and resting readings. The sag is an internal-resistance proxy for cell health; thresholds and details are in [POWER.md](POWER.md#battery-telemetry-and-health).
+The AA cell voltage arrives at GPIO0 through a 100 kΩ series resistor with a capacitor to ground, so the pin sees the cell voltage directly, where 1000 mV maps to 0% and 1500 mV to 100%. The stock firmware maps 1200 mV to 0% instead, so the same cell reads higher here: 1.35 V is 70% on this firmware and 50% on the stock one. Beyond resting voltage, the firmware measures sag under load by lighting all three LEDs for about 150 ms as a known load and comparing the loaded and resting readings. The sag is an internal-resistance proxy for cell health; thresholds and details are in [POWER.md](POWER.md#battery-telemetry-and-health).
 
 On USB power the cell is out of the load path and the battery percentage is not meaningful; it typically pins at 0%. The history below is from a unit that ran its first three days on AA and then moved to USB power, where the reading flatlines at zero while the device keeps reporting soil data normally.
 

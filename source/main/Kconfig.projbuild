@@ -20,6 +20,7 @@ menu "Soil Sensor Configuration"
     config SOIL_EXCITATION_SETTLE_MS
         int "Probe excitation settle time (ms)"
         default 300
+        range 10 5000
         help
             Delay between enabling the 200 kHz excitation PWM and the first
             ADC read, letting the probe's RC filter settle.
@@ -42,8 +43,9 @@ menu "Soil Sensor Configuration"
         int "Battery empty voltage at ADC pin (mV)"
         default 1000
         help
-            ADC pin voltage that maps to 0% battery. Matches the original
-            ESPHome firmware's mapping for this kit.
+            ADC pin voltage that maps to 0% battery. The stock ESPHome
+            firmware maps 1200 mV to 0% instead; set 1200 to match its
+            percentages.
 
     config SOIL_BATTERY_FULL_MV
         int "Battery full voltage at ADC pin (mV)"

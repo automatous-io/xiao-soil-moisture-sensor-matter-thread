@@ -35,6 +35,10 @@ static const char *TAG = "battery";
 #define SAMPLE_GAP_MS       20
 #define LOAD_SETTLE_MS      30
 
+// The percent mapping divides by this span.
+static_assert(CONFIG_SOIL_BATTERY_FULL_MV > CONFIG_SOIL_BATTERY_EMPTY_MV,
+              "SOIL_BATTERY_FULL_MV must be above SOIL_BATTERY_EMPTY_MV");
+
 static adc_cali_handle_t s_cali;
 
 esp_err_t battery_init(void)

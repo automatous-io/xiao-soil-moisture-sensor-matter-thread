@@ -44,6 +44,11 @@ static const char *TAG = "soil_probe";
 // A valid calibration needs the dry reference meaningfully above wet.
 #define CAL_MIN_SPAN_MV 200
 
+// Higher moisture reads lower, so the defaults must keep dry above wet, or
+// every uncalibrated reading maps to 0%.
+static_assert(CONFIG_SOIL_CAL_DEFAULT_DRY_MV > CONFIG_SOIL_CAL_DEFAULT_WET_MV,
+              "SOIL_CAL_DEFAULT_DRY_MV must be above SOIL_CAL_DEFAULT_WET_MV");
+
 #define NVS_NAMESPACE "soilcal"
 #define NVS_KEY_DRY   "dry_mv"
 #define NVS_KEY_WET   "wet_mv"

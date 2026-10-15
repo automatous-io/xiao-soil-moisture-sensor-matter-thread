@@ -29,9 +29,10 @@
 static const char *TAG = "status_led";
 
 // Moisture classification thresholds, carried over from the ESPHome
-// firmware's ref_dry (0.23) and ref_wet (0.58) fractions.
-#define MOISTURE_DRY_BELOW_PERCENT    23
-#define MOISTURE_NORMAL_ABOVE_PERCENT 58
+// firmware's ref_dry (0.23) and ref_wet (0.58) fractions. Like the ESPHome
+// firmware, 23% itself still counts as dry.
+#define MOISTURE_DRY_AT_OR_BELOW_PERCENT 23
+#define MOISTURE_NORMAL_ABOVE_PERCENT    58
 
 static esp_timer_handle_t s_timer;
 static esp_pm_lock_handle_t s_pm_lock;
@@ -178,7 +179,7 @@ void status_led_load(bool on)
 void status_led_moisture_blink(uint8_t moisture_percent)
 {
     led_color_t color;
-    if (moisture_percent < MOISTURE_DRY_BELOW_PERCENT) {
+    if (moisture_percent <= MOISTURE_DRY_AT_OR_BELOW_PERCENT) {
         color = LED_RED;
     } else if (moisture_percent < MOISTURE_NORMAL_ABOVE_PERCENT) {
         color = LED_YELLOW;

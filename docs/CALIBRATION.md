@@ -19,7 +19,7 @@ Calibration persists in NVS.
 
 ## Sanity checking
 
-Single-press the button for an instant reading with an LED verdict: red below 23%, yellow from 23 to 57%, green at 58% and above, the same classification the stock firmware uses. The exact percentage reaches Home Assistant a moment later.
+Single-press the button for an instant reading with an LED verdict: red at 23% and below, yellow from 24 to 57%, green at 58% and above, the same classification the stock firmware uses. The exact percentage reaches Home Assistant a moment later.
 
 ## Fleet builds
 

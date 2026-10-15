@@ -160,4 +160,4 @@ This project comes from the same hands as the [Shelly Gen4 Matter over Thread fi
 
 ## License
 
-[Apache 2.0](LICENSE). Portions derived from [Espressif esp-matter](https://github.com/espressif/esp-matter) examples (Apache 2.0). Probe excitation parameters and the battery voltage mapping match the [stock ESPHome firmware](https://github.com/Seeed-Studio/xiao-esphome-projects) to keep readings comparable.
+[Apache 2.0](LICENSE). Portions derived from [Espressif esp-matter](https://github.com/espressif/esp-matter) examples (Apache 2.0). Probe excitation parameters and the default probe calibration match the [stock ESPHome firmware](https://github.com/Seeed-Studio/xiao-esphome-projects) to keep readings comparable.
